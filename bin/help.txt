@@ -1,0 +1,14 @@
+Usage: reco [options] <command>
+
+where <options> is one of:
+-h               Show help information.
+-v               Show extra information if available.
+--rfc <rfc>      Scope command to a specific supplier.
+
+where <command> is one of:
+
+    init, create, xml, xmls, label, 
+    labels, concept, concepts, flush, 
+    train, test, man
+
+reco man         Display full usage information.

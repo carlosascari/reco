@@ -1,0 +1,57 @@
+Usage: reco [options] <command>
+
+where <options> is one of:
+-h               Show help information.
+-v               Show extra information if available.
+--rfc <rfc>      Scope command to a specific supplier.
+
+where <command> is one of:
+
+init                 Create configuration file (reco.json)
+
+create               Read ./reco.json and create project in
+                     current folder.
+
+xml <file>           Add a xml invoice found in <file>.
+
+xmls <dir>           Add all xml invoices found in <dir>.
+
+label <lbl> <con>    Add a new label to a concept.
+                     Use (") quotes for multiple words.
+
+labels <file>        Add labels found in a list.
+                     Labels are seperated by new lines.
+                     Label strings and concept strings 
+                     are seperated by a (:) colon.
+
+                     example: apple:I WANT AN APPLE
+                              orange:ORANGE YOU GLAD?
+                              lemon:EAT SOME LEMON PIE
+
+concept <con>        Add a new concept.
+                     Maximum length is 1000.
+                     Use --rfc option to specify the
+                     supplier the concept belongs to.
+
+                     Specifying a supplier improves 
+                     accuracy.
+
+concepts <dir>       Add concepts found in a list.
+                     Concepts are seperated by new lines.
+
+                     example: I WANT AN APPLE
+                              ORANGE YOU GLAD?
+                              EAT SOME LEMON PIE
+
+                     Use --rfc option to specify the
+                     supplier the concepts belongs to.
+
+                     Specifying a supplier improves 
+                     accuracy.
+
+flush                Reset project.
+
+train                Train classifiers. 
+
+test <con>           Identify a concept.
+                     Maximum length is 1000.
