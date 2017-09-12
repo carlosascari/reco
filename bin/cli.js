@@ -89,6 +89,7 @@ class Cli {
     const delim = _.args.delim === true ? DEFAULT_DELIM : _.args.delim;
     const verbose = +_.args.v;
     const rfc =  _.args.rfc;
+    let progessCounter = 0;
 
     // Reco instance
     const reco = new Reco(_.config);
@@ -169,14 +170,17 @@ class Cli {
         } else {
           list = lines.map(line => [line, line]);
         }
-        async.eachSeries(
+        async.each(
           list,
           (pair, next) => {
             const lbl = trim(pair[0]);
             const con = trim(pair[1]);
             reco.addLabel(lbl, con, rfc)
             .then(() => {
-              if (verbose) log('Label stored:', lbl);
+              if (verbose) {
+                progessCounter++;
+                log('Label stored: (%s%) %s', ((progessCounter/list.length)*100).toFixed(2), lbl);
+              }
               next();
             })
             .catch(next);
@@ -188,7 +192,7 @@ class Cli {
           }
         );
       break;
-      case 'concept':
+      case '__concept':
         const concept = trim(_.commands.slice(1).join(' '));
         if (!concept) return log('You must specify a concept.');
         reco.addConcept(concept, rfc)
@@ -200,9 +204,16 @@ class Cli {
           }
           exit();
         })
-        .catch(log);
+        .catch(error => {
+          if (error.message === 'Invalid supplier rfc') {
+            log('There is no supplier with rfc: "%s"', rfc);
+          } else {
+            log(error);
+          }
+          exit();
+        });
       break;
-      case 'concepts':
+      case '__concepts':
         const consPath = _.commands.slice(1).join(' ');
         if (!exists(consPath)) return log('File not found: "%s".', consPath);
         if (!isFile(consPath)) return log('Not a file.');
@@ -241,15 +252,17 @@ class Cli {
         const test = _.commands.slice(1).join(' ');
         if (!test) return log('You must specify a concept to test.');
         reco.test(test, rfc)
-        .then((result) => {
+        .then(stats => {
+          const result = stats.mashup;
+          result.label = result[0].label;
           log(result.label);
           if (verbose) {
             const sliceAmount = verbose === 1 ? 10: verbose;
-            const maxLabelSize = Math.max.apply(Math, result.classifications.slice(0, sliceAmount).map(x => x.label.length));
+            const maxLabelSize = Math.max.apply(Math, result.slice(0, sliceAmount).map(x => x.label.length));
             log('');
             log('Classifications');
             log('---------------');
-            log(result.classifications.slice(0, sliceAmount).map(x => {
+            log(result.slice(0, sliceAmount).map(x => {
               const { label, value } = x;
               const pad = Array(maxLabelSize - label.length).fill(' ').join('');
               return `${ label }  ${ pad }  ${ (value * 100).toFixed(2) }%`;

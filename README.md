@@ -125,6 +125,7 @@ apple:I WANT AN APPLE
 orange:ORANGE YOU GLAD?
 lemon:EAT SOME LEMON PIE
 ```
+You may use the `-v` option to see progress.
 
 You may use the `--rfc` option to scope labels to a supplier.
 
