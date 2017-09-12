@@ -135,52 +135,6 @@ You mau use the `--no-delim` option to specify that the list is not delimeted, t
 
 This is usefull for adding a supplier's catalog, when identifying their concepts.
 
-##### Add a new concept 
-
-Will create a concept that is used to train a classifier.
-
-```
-reco concept "CONCEPT"
-```
-
-You may use the `--rfc` option to scope a concept to a supplier.
-
-```
-reco concept "CONCEPT" --rfc XXX0123456X7
-```
-
-Scoping a concept improves recognition accuracy.
-
-##### Add all concepts found in a file
-
-Add concepts found in a list.
-
-```
-reco concepts path/to/concepts.lst
-```
-
-Concepts are seperated by new lines.
-
-example: 
-
-```
-I WANT AN APPLE
-ORANGE YOU GLAD?
-EAT SOME LEMON PIE
-```
-
-You may use the `--rfc` option to scope concepts to a supplier.
-
-##### Empty database
-
-Reset project.
-
-```
-reco flush
-```
-
-*All tables in database will be truncated.*
-
 ##### Train classifiers
 
 Train classifiers. 
@@ -245,10 +199,6 @@ Where recoConfig can have the follwing options:
 }
 ```
 
-*Promise* Reco::**addConcept**(*String* concept, *String* [supplierRfc=null]);
-
-Add a concept.
-
 *Promise* Reco::**addLabel**(*String* label, *String* concept, *String* [supplierRfc=null]);
 
 Add a label.
@@ -256,10 +206,6 @@ Add a label.
 *Promise* Reco::**addXmlInvoice**(*String* xml);
 
 Add an invoice.
-
-*Promise* Reco::**flush**();
-
-Reset project.
 
 *Promise* Reco::**train**();
 

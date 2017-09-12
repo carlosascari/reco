@@ -192,54 +192,6 @@ class Cli {
           }
         );
       break;
-      case '__concept':
-        const concept = trim(_.commands.slice(1).join(' '));
-        if (!concept) return log('You must specify a concept.');
-        reco.addConcept(concept, rfc)
-        .then((id) => {
-          log('Concept stored.');
-          if (verbose) {
-            log('');
-            log('Database id: %s', id);
-          }
-          exit();
-        })
-        .catch(error => {
-          if (error.message === 'Invalid supplier rfc') {
-            log('There is no supplier with rfc: "%s"', rfc);
-          } else {
-            log(error);
-          }
-          exit();
-        });
-      break;
-      case '__concepts':
-        const consPath = _.commands.slice(1).join(' ');
-        if (!exists(consPath)) return log('File not found: "%s".', consPath);
-        if (!isFile(consPath)) return log('Not a file.');
-        async.eachSeries(
-          read(consPath).split('\n')
-          .filter(trim),
-          (concept, next) => {
-            reco.addConcept(concept, rfc)
-            .then(() => next())
-            .catch(next);
-          },
-          (error) => {
-            if (error) return log(error);
-            log('Concepts stored.');
-            exit();
-          }
-        );
-      break;
-      case 'flush':
-        reco.flush()
-        .then(() => {
-          log('Database flushed.');
-          exit();
-        })
-        .catch(log);
-      break;
       case 'train':
         reco.train()
         .then(() => {
@@ -323,10 +275,13 @@ class Cli {
     const { _ } = this;
     try {
       _.config = JSON.parse(read(_.configPath));
-      _.config.database.connection.filename = resolve(_.config.database.connection.filename);
-      _.config.database.migrations.directory = resolve(_.config.database.migrations.directory);
-      _.config.database.migrations.stub = resolve(_.config.database.migrations.stub);
-      _.config.database.seeds.directory = resolve(_.config.database.seeds.directory);
+      const database = _.config.database;
+      if (!database) throw new Error('Invalid config. database field is missing.');
+      const { connection, migrations, seeds } = database;
+      if (connection.filename) connection.filename = resolve(connection.filename);
+      if (migrations.directory) migrations.directory = resolve(migrations.directory);
+      if (migrations.stub) migrations.stub = resolve(migrations.stub);
+      if (seeds.directory) seeds.directory = resolve(seeds.directory);
     } catch(ex) {
       if (ex.code === 'ENOENT') {
         log('Configuration missing. run `reco init`.')
