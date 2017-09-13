@@ -149,6 +149,10 @@ class Cli {
         async.eachSeries(
           xmls,
           (xml, next) => {
+            if (verbose) {
+              progessCounter++
+              log('Progress: %s%', ((progessCounter/xmls.length)*100).toFixed(2))
+            }
             reco.addXmlInvoice(xml)
             .then(() => next())
             .catch(next);
