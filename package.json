@@ -1,5 +1,5 @@
 {
-  "name": "reco",
+  "name": "@ascari/reco",
   "version": "1.0.0",
   "description": "Generic text classifier for Mexican electronic invoices.",
   "main": "index.js",
