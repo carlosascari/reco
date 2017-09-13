@@ -9,13 +9,13 @@ A text **reco**gnition engine that classifies concept descriptions found in elec
 You must install reco globally to use the command line interface.
 
 ```
-npm i reco -g
+npm i @ascari/reco -g
 ```
 
 ### Module
 
 ```
-npm i reco --save
+npm i @ascari/reco --save
 ```
 
 ## USAGE
