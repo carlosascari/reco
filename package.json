@@ -1,8 +1,7 @@
 {
-  "private": true,
   "name": "reco",
-  "version": "0.0.1",
-  "description": "Generic text classifier engine",
+  "version": "1.0.0",
+  "description": "Generic text classifier for Mexican electronic invoices.",
   "main": "index.js",
   "bin": {
     "reco": "bin/cli.js"
@@ -10,19 +9,16 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": ["sat", "invoice", "factura", "factura electronica", "recognition", "text recognition"],
   "author": "Carlos Ascari Gutierrez Hermosillo <ascari.gtz@gmail.com>",
-  "license": "ALL RIGHTS RESERVED",
+  "license": "MIT",
   "dependencies": {
     "async": "^2.5.0",
-    "chalk": "^2.1.0",
-    "chokidar": "^1.7.0",
     "fs-extra": "^4.0.1",
     "knex": "^0.13.0",
     "minimist": "^1.2.0",
     "natural": "^0.5.4",
     "onepath": "^1.1.2",
-    "pm2": "^2.6.1",
     "xml2js": "^0.4.19"
   }
 }

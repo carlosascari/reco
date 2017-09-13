@@ -13,7 +13,7 @@ const chalk = require('chalk');
 const onepath = require('onepath')();
 const Reco = require('..');
 
-const { resolve } = onepath;
+const { resolve, sep } = onepath;
 const { argv, exit, stdout } = process;
 const { log } = console;
 const { defineProperty } = Object;
@@ -35,21 +35,24 @@ const STUB_CONFIG = {
   database: {
     client: 'sqlite3',
     connection: {
-      filename: './database/database.sqlite'
+      filename: `.${ sep }database${ sep }database.sqlite`
     },
     migrations: {
       tableName: 'migrations',
-      directory: './database/migrations',
-      stub: './database/stub.migration.js'
+      directory: `.${ sep }database${ sep }migrations`,
+      stub: `.${ sep }database${ sep }stub.migration.js`
     },
     seeds: {
-      directory: './database/seeds',
+      directory: `.${ sep }database${ sep }seeds`,
     },
     useNullAsDefault: true,
   },
 };
 
 const DEFAULT_DELIM = ':';
+
+// Available commands
+const AVAIL_CMDS = ['init', 'create', 'xml', 'xmls', 'label', 'labels', 'train', 'test', 'man'];
 
 /**
 * Command-line interface
@@ -72,7 +75,18 @@ class Cli {
       exit();
     }
 
-    if (_.commands[0] === 'init') {
+    const command = _.commands[0];
+    if (AVAIL_CMDS.indexOf(command) === -1) {
+      log('Invalid command:', command);
+      exit();
+    }
+
+    if (command === 'man') {
+      this.printManual();
+      exit();
+    }
+
+    if (command === 'init') {
       this.createConfigFile();
       log('Created ./reco.json.');
       exit();
@@ -94,11 +108,12 @@ class Cli {
     // Reco instance
     const reco = new Reco(_.config);
 
-    switch(_.commands[0]) {
-      case 'man':
-      this.printManual();
-      exit();
-      break;
+    _.eachMethod = 'each';
+    if (_.config.database.client.indexOf('sqlite') === 0) {
+      _.eachMethod = 'eachSeries';
+    }
+
+    switch(command) {
       case 'create':
         this.createProject();
         log('Project created.');
@@ -116,7 +131,10 @@ class Cli {
           }
           exit();
         })
-        .catch(log);
+        .catch(error => {
+          log(error);
+          exit();
+        });
       break;
       case 'xmls':
         const xmls = [];
@@ -156,7 +174,10 @@ class Cli {
           }
           exit();
         })
-        .catch(log);
+        .catch(error => {
+          log(error);
+          exit();
+        });
       break;
       case 'labels':
         const lblsPath = _.commands.slice(1).join(' ');
@@ -170,7 +191,7 @@ class Cli {
         } else {
           list = lines.map(line => [line, line]);
         }
-        async.each(
+        async[_.eachMethod](
           list,
           (pair, next) => {
             const lbl = trim(pair[0]);
@@ -223,12 +244,19 @@ class Cli {
           }
           exit();
         })
-        .catch(log);
+        .catch(error => {
+          if (error.message === 'classifier not trained') {
+            log('Classifier has not been trained.')
+          } else {
+            log(error);
+          }
+          exit();
+        });
       break;
       default:
         this.printHelp();
         log('');
-        log('Invalid command:', _.commands[0]);
+        log('Invalid command:', command);
         exit();
     }
   }
@@ -254,17 +282,21 @@ class Cli {
   */
   createProject() {
     const { config } = this._;
-    fs.ensureDirSync(resolve(config.database.migrations.directory));
-    fs.ensureDirSync(resolve(config.database.seeds.directory));
-    fs.copySync(
-      onepath('~/../lib/stub.migration.js'), 
-      resolve(`${ config.database.migrations.directory }/0.js`)
-    );
-    if (config.database.migrations.stub) {
+    if (config.database.migrations) {
+      fs.ensureDirSync(resolve(config.database.migrations.directory));  
       fs.copySync(
-        onepath('~/../lib/stub.migration.js'),
-        resolve(config.database.migrations.stub)
+        onepath('~/../lib/stub.migration.js'), 
+        resolve(`${ config.database.migrations.directory }${ sep }0.js`)
       );
+      if (config.database.migrations.stub) {
+        fs.copySync(
+          onepath('~/../lib/stub.migration.js'),
+          resolve(config.database.migrations.stub)
+        );
+      }
+    }
+    if (config.database.seeds) {
+      fs.ensureDirSync(resolve(config.database.seeds.directory));  
     }
   }
 
@@ -273,21 +305,43 @@ class Cli {
   */
   getConfig() {
     const { _ } = this;
+    let configFile;
+
     try {
-      _.config = JSON.parse(read(_.configPath));
-      const database = _.config.database;
-      if (!database) throw new Error('Invalid config. database field is missing.');
-      const { connection, migrations, seeds } = database;
-      if (connection.filename) connection.filename = resolve(connection.filename);
-      if (migrations.directory) migrations.directory = resolve(migrations.directory);
-      if (migrations.stub) migrations.stub = resolve(migrations.stub);
-      if (seeds.directory) seeds.directory = resolve(seeds.directory);
+      configFile = read(_.configPath);
     } catch(ex) {
       if (ex.code === 'ENOENT') {
         log('Configuration missing. run `reco init`.')
       } else {
         log(ex);
       }
+      exit();
+    }
+
+    try {
+      _.config = JSON.parse(configFile);
+    } catch(ex) {
+      log('Invalid configuration file (./reco.json). Could not parse JSON.');
+      exit();
+    }
+
+    try {
+      const database = _.config.database;
+      if (!database) {
+        log('Invalid configuration file (./reco.json). `database` property is missing.');
+        exit();
+      } 
+      const { connection, migrations, seeds, client } = database;
+      if (!client) {
+        log('Invalid configuration file (./reco.json). `database.client` property is missing.');
+        exit();
+      } 
+      if (connection && connection.filename) connection.filename = resolve(connection.filename);
+      if (migrations && migrations.directory) migrations.directory = resolve(migrations.directory);
+      if (migrations && migrations.stub) migrations.stub = resolve(migrations.stub);
+      if (seeds && seeds.directory) seeds.directory = resolve(seeds.directory);
+    } catch(ex) {
+      log(ex);
       exit();
     }
   }

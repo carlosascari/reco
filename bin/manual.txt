@@ -1,16 +1,16 @@
 Usage: reco [options] <command>
 
-where <options> is one of:
--h               Show help information.
--v               Show extra information if available.
---rfc <rfc>      Scope command to a specific supplier.
+where <options> is any of:
+-h                   Show help information.
+-v                   Show extra information if available.
+--rfc <rfc>          Scope command to a specific supplier.
 
 where <command> is one of:
 
 init                 Create configuration file (reco.json)
 
-create               Read ./reco.json and create project in
-                     current folder.
+create               Read ./reco.json and create project.
+                     A database schema will be scaffolded.
 
 xml <file>           Add a xml invoice found in <file>.
 
